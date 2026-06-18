@@ -46,7 +46,7 @@
         knip = pkgs.stdenv.mkDerivation {
           pname = "knip";
           inherit version src;
-          nativeBuildInputs = [ pkgs.bun pkgs.makeWrapper ];
+          nativeBuildInputs = [ pkgs.makeWrapper ];
           
           buildPhase = ''
             if [ -d ${bunDeps}/node_modules ]; then
@@ -59,7 +59,7 @@
             mkdir -p $out/libexec/knip $out/bin
             cp -r . $out/libexec/knip
             
-            makeWrapper ${pkgs.bun}/bin/bun $out/bin/knip \
+            makeWrapper ${pkgs.nodejs_24}/bin/node $out/bin/knip \
               --add-flags "$out/libexec/knip/bin/knip.js"
           '';
 
