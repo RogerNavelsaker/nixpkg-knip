@@ -7,28 +7,61 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, ... }:
-    let
-      systems = [ "x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin" ];
-      forAllSystems = f: nixpkgs.lib.genAttrs systems (system: f {
+  outputs = { self, nixpkgs, utils }:
+    utils.lib.eachDefaultSystem (system:
+      let
         pkgs = import nixpkgs { inherit system; };
-      });
-    in {
-      packages = forAllSystems ({ pkgs }: {
-        default = pkgs.buildNpmPackage rec {
+
+        version = "5.21.2";
+
+        src = pkgs.fetchurl {
+          url = "https://registry.npmjs.org/knip/-/knip-${version}.tgz";
+          hash = pkgs.lib.fakeHash;
+        };
+
+        bunDeps = pkgs.stdenv.mkDerivation {
+          name = "knip-bun-deps";
+          inherit src;
+          nativeBuildInputs = [ pkgs.bun pkgs.cacert ];
+          buildPhase = ''
+            export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
+            # The tarball doesn't contain a lockfile usually, so we generate one or just install
+            bun install --production --ignore-scripts
+          '';
+          installPhase = ''
+            mkdir -p $out
+            if [ -d node_modules ]; then
+              cp -r node_modules $out/
+            fi
+          '';
+          dontFixup = true;
+          outputHashMode = "recursive";
+          outputHashAlgo = "sha256";
+          outputHash = pkgs.lib.fakeHash;
+        };
+
+        knip = pkgs.stdenv.mkDerivation {
           pname = "knip";
-          version = "5.21.2";
+          inherit version src;
+          nativeBuildInputs = [ pkgs.bun pkgs.makeWrapper ];
+          
+          buildPhase = ''
+            if [ -d ${bunDeps}/node_modules ]; then
+              cp -r ${bunDeps}/node_modules ./
+              chmod -R +w node_modules
+            fi
+          '';
 
-          src = pkgs.fetchFromGitHub {
-            owner = "webpro";
-            repo = "knip";
-            rev = version;
-            hash = pkgs.lib.fakeHash;
-          };
-
-          npmDepsHash = pkgs.lib.fakeHash;
+          installPhase = ''
+            mkdir -p $out/libexec/knip $out/bin
+            cp -r . $out/libexec/knip
+            
+            makeWrapper ${pkgs.bun}/bin/bun $out/bin/knip \
+              --add-flags "$out/libexec/knip/bin/knip.js"
+          '';
 
           meta = with pkgs.lib; {
             description = "Find unused files, dependencies and exports in your JavaScript and TypeScript projects";
@@ -37,12 +70,15 @@
             mainProgram = "knip";
           };
         };
-      });
-
-      devShells = forAllSystems ({ pkgs }: {
-        default = pkgs.mkShell {
+      in
+      {
+        packages = {
+          inherit knip;
+          default = knip;
+        };
+        devShells.default = pkgs.mkShell {
           packages = with pkgs; [ nix-update ];
         };
-      });
-    };
+      }
+    );
 }
