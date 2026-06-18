@@ -19,7 +19,7 @@
 
         src = pkgs.fetchurl {
           url = "https://registry.npmjs.org/knip/-/knip-${version}.tgz";
-          hash = pkgs.lib.fakeHash;
+          hash = "sha256-eiETJp2J7ETB6VG0bCVcPKd0JQ+V2X0h5Y3NvRySBT4=";
         };
 
         bunDeps = pkgs.stdenv.mkDerivation {
@@ -40,7 +40,7 @@
           dontFixup = true;
           outputHashMode = "recursive";
           outputHashAlgo = "sha256";
-          outputHash = pkgs.lib.fakeHash;
+          outputHash = "sha256-m/QvOANNDJbMFBwAC9O++sxuHsMIZ2GlxXNnQDwcfPE=";
         };
 
         knip = pkgs.stdenv.mkDerivation {
