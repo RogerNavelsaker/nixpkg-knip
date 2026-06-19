@@ -22,46 +22,21 @@
           hash = "sha256-eiETJp2J7ETB6VG0bCVcPKd0JQ+V2X0h5Y3NvRySBT4=";
         };
 
-        bunDeps = pkgs.stdenv.mkDerivation {
-          name = "knip-bun-deps";
-          inherit src;
-          nativeBuildInputs = [ pkgs.bun pkgs.cacert ];
-          buildPhase = ''
-            export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
-            # The tarball doesn't contain a lockfile usually, so we generate one or just install
-            bun install --production --ignore-scripts
-          '';
-          installPhase = ''
-            mkdir -p $out
-            if [ -d node_modules ]; then
-              cp -r node_modules $out/
-            fi
-          '';
-          dontFixup = true;
-          outputHashMode = "recursive";
-          outputHashAlgo = "sha256";
-          outputHash = "sha256-54tT65jIbnmAOkBKCJszLnt8O3shxwO3dK+r19NnCtw=";
-        };
-
-        knip = pkgs.stdenv.mkDerivation {
+        knip = pkgs.buildNpmPackage {
           pname = "knip";
           inherit version src;
-          nativeBuildInputs = [ pkgs.makeWrapper ];
-          
-          buildPhase = ''
-            if [ -d ${bunDeps}/node_modules ]; then
-              cp -r ${bunDeps}/node_modules ./
-              chmod -R +w node_modules
-            fi
+          postPatch = ''
+            cp ${./package-lock.json} package-lock.json
           '';
-
-          installPhase = ''
-            mkdir -p $out/libexec/knip $out/bin
-            cp -r . $out/libexec/knip
-            
-            makeWrapper ${pkgs.nodejs_24}/bin/node $out/bin/knip \
-              --add-flags "$out/libexec/knip/bin/knip.js"
-          '';
+          npmDepsFetcherVersion = 2;
+          npmDepsHash = "sha256-xUj+jeDEX/HRqamVIH6QN3xfDHqs5YuyoD1AYgHHQ2s=";
+          npmFlags = [
+            "--ignore-scripts"
+            "--legacy-peer-deps"
+          ];
+          npmInstallFlags = [ "--include=dev" ];
+          npmPruneFlags = [ "--include=dev" ];
+          dontNpmBuild = true;
 
           meta = with pkgs.lib; {
             description = "Find unused files, dependencies and exports in your JavaScript and TypeScript projects";
