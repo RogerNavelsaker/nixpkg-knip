@@ -40,7 +40,7 @@
           dontFixup = true;
           outputHashMode = "recursive";
           outputHashAlgo = "sha256";
-          outputHash = "sha256-m/QvOANNDJbMFBwAC9O++sxuHsMIZ2GlxXNnQDwcfPE=";
+          outputHash = "sha256-54tT65jIbnmAOkBKCJszLnt8O3shxwO3dK+r19NnCtw=";
         };
 
         knip = pkgs.stdenv.mkDerivation {
