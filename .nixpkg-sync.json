@@ -1,0 +1,8 @@
+{
+  "kind": "npm",
+  "upstream": "knip",
+  "version_file": "flake.nix",
+  "version_grep": "version = \"[0-9]+\\.[0-9]+\\.[0-9]+\"",
+  "pinned_paths": ["package-lock.json"],
+  "pinned_flake_regex": "npmDepsHash|registry.npmjs.org"
+}
