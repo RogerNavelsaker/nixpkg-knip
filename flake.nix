@@ -26,11 +26,11 @@
       let
         pkgs = import nixpkgs { inherit system; };
 
-        version = "5.21.2";
+        version = "6.48.0";
 
         src = pkgs.fetchurl {
           url = "https://registry.npmjs.org/knip/-/knip-${version}.tgz";
-          hash = "sha256-eiETJp2J7ETB6VG0bCVcPKd0JQ+V2X0h5Y3NvRySBT4=";
+          hash = "sha256-PxPCP3+A7W5g6VPhkh/m9gmZKdFnFFwhE4L4ozX9N1U=";
         };
 
         knip = pkgs.buildNpmPackage {
@@ -40,7 +40,7 @@
             cp ${./package-lock.json} package-lock.json
           '';
           npmDepsFetcherVersion = 2;
-          npmDepsHash = "sha256-xUj+jeDEX/HRqamVIH6QN3xfDHqs5YuyoD1AYgHHQ2s=";
+          npmDepsHash = "sha256-Tl5CSWTGvmCsxQOPEFlUbNGse750CKVW3Wn/VB7EEDo=";
           npmFlags = [
             "--ignore-scripts"
             "--legacy-peer-deps"
